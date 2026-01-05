@@ -19,6 +19,7 @@ async function main() {
       .select({ id: usersSync.id })
       .from(usersSync)
       .orderBy(usersSync.id);
+    console.log("Users ", users.length);
 
     if (users.length === 0) {
       console.log("👤 No users found, inserting default seed user...");
@@ -31,6 +32,7 @@ async function main() {
     }
 
     const ids = users.map((user) => user.id);
+    console.log("Ids ", ids);
     console.log(`👥 Using ${users.length} user(s)`);
 
     console.log("🍩 Using drizzle-seed...");

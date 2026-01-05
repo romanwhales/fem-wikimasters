@@ -15,6 +15,10 @@ export default async function EditArticlePage({
   const { id } = await params;
   const _user = await stackServerApp.getUser({ or: "redirect" });
 
+  if (id === "new") {
+    return <WikiEditor isEditing={true} articleId={id} />;
+  }
+
   const article = await getArticleById(+id);
   if (!article) {
     notFound();

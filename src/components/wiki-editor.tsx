@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import type React from "react";
 import { useState } from "react";
 import { createArticle, updateArticle } from "@/app/actions/articles";
+import { uploadFile } from "@/app/actions/upload";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -16,6 +17,7 @@ interface WikiEditorProps {
   initialContent?: string;
   isEditing?: boolean;
   articleId?: string;
+  userId?: string;
 }
 
 interface FormData {
@@ -34,6 +36,7 @@ export default function WikiEditor({
   initialContent = "",
   isEditing = false,
   articleId,
+  userId = "user-1",
 }: WikiEditorProps) {
   const [title, setTitle] = useState(initialTitle);
   const [content, setContent] = useState(initialContent);
@@ -82,47 +85,54 @@ export default function WikiEditor({
 
     setIsSubmitting(true);
 
-    const _formData: FormData = {
-      title: title.trim(),
-      content: content.trim(),
-      files,
-    };
-    const payload = {
-      title: title.trim(),
-      content: content.trim(),
-      authorId: "user-1",
-    };
+    try {
+      let imageUrl: string | undefined;
 
-    // Log the form data (as requested - no actual API calls)
-    // console.log("Form submitted:", {
-    //   action: isEditing ? "edit" : "create",
-    //   articleId: isEditing ? articleId : undefined,
-    //   data: formData,
-    // });
-    if (isEditing && articleId) {
-      await updateArticle(articleId, payload);
-      router.push(`/wiki/${articleId}`);
-    } else {
-      const _result = await createArticle(payload);
-      // Redirect to article page after successful create
-      // if (result.id) {
-      //   router.push(`/wiki/${result.id}`);
-      // } else {
-      //   router.push("/");
-      // }
+      // if there is at least one file, upload the first one via server action
+      if (files.length > 0) {
+        const fd = new FormData();
+        fd.append("files", files[0]);
+
+        // uploadFile is a server action i,ported below
+        const uploaded = await uploadFile(fd);
+        imageUrl = uploaded?.url;
+      }
+      const payload = {
+        title: title.trim(),
+        content: content.trim(),
+        imageUrl,
+        authorId: userId,
+      };
+      if (isEditing && articleId) {
+        await updateArticle(articleId, payload);
+        router.push(`/wiki/${articleId}`);
+      } else {
+        const result = await createArticle(payload);
+        // Redirect to article page after successful create
+        // if (result.id) {
+        //   router.push(`/wiki/${result.id}`);
+        // } else {
+        //   router.push("/");
+        // }
+      }
+    } catch (error) {
+      console.error("Error submitting articles ", error);
+      alert("Failed to submit article");
+    } finally {
+      setIsSubmitting(false);
     }
 
     // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    // await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    setIsSubmitting(false);
+    // setIsSubmitting(false);
 
-    // In a real app, you would navigate after successful submission
-    alert(
-      `Article ${
-        isEditing ? "updated" : "created"
-      } successfully! Check console for form data.`,
-    );
+    // // In a real app, you would navigate after successful submission
+    // alert(
+    //   `Article ${
+    //     isEditing ? "updated" : "created"
+    //   } successfully! Check console for form data.`,
+    // );
   };
 
   // Handle cancel

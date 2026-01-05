@@ -16,5 +16,6 @@ export const authorizeUserToEditArticle =
     if (!response.length) {
       return false;
     }
+    console.log("Logged iNuser id ", loggedInUserId, response[0].authorId);
     return response[0].authorId === loggedInUserId;
   };

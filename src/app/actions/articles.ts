@@ -2,9 +2,12 @@
 
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
+import summarizeArticle from "@/ai/summarize";
+import redis from "@/cache";
 import db from "@/db";
 import { authorizeUserToEditArticle } from "@/db/authz";
 import { articles } from "@/db/schema";
+import { ensureUserExists } from "@/db/sync-user";
 import { stackServerApp } from "@/stack/server";
 
 export type CreateArticleInput = {
@@ -27,16 +30,21 @@ export async function createArticle(data: CreateArticleInput) {
     throw new Error("un authorized");
   }
 
+  const summary = await summarizeArticle(data.title || "", data.content || "");
+  ensureUserExists(user);
   // TODO: Replace with actual database call
   console.log("✨ createArticle called:", data);
 
-  await db.insert(articles).values({
+  const response = await db.insert(articles).values({
     title: data.title,
     content: data.content,
     slug: `${Date.now()}`,
     published: true,
     authorId: user.id,
+    imageUrl: data.imageUrl ?? undefined,
+    summary,
   });
+  redis.del("articles:all");
   return { success: true, message: "Article create logged (stub)" };
 }
 
@@ -49,6 +57,7 @@ export async function updateArticle(id: string, data: UpdateArticleInput) {
   if (!(await authorizeUserToEditArticle(user.id, +id))) {
     throw new Error("Forbidden");
   }
+  const summary = await summarizeArticle(data.title || "", data.content || "");
 
   const authorId = user.id;
   // TODO: Replace with actual database update
@@ -57,6 +66,8 @@ export async function updateArticle(id: string, data: UpdateArticleInput) {
     .set({
       title: data.title,
       content: data.content,
+      imageUrl: data.imageUrl ?? undefined,
+      summary: summary ?? undefined,
     })
     .where(eq(articles.id, +id));
   console.log("📝 updateArticle called:", { id, ...data, authorId });
