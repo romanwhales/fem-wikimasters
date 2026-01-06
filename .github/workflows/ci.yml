@@ -73,6 +73,7 @@ jobs:
       - name: Delete Neon Branch
         if: always()
         uses: neondatabase/delete-branch-action@v3
+        continue-on-error: true
         with:
           project_id: ${{ secrets.NEON_PROJECT_ID }}
           branch: ${{ env.BRANCH_NAME }}
