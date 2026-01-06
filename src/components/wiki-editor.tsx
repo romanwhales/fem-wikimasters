@@ -20,11 +20,11 @@ interface WikiEditorProps {
   userId?: string;
 }
 
-interface FormData {
-  title: string;
-  content: string;
-  files: File[];
-}
+// interface FormData {
+//   title: string;
+//   content: string;
+//   files: File[];
+// }
 
 interface FormErrors {
   title?: string;
@@ -107,7 +107,7 @@ export default function WikiEditor({
         await updateArticle(articleId, payload);
         router.push(`/wiki/${articleId}`);
       } else {
-        const result = await createArticle(payload);
+        const _result = await createArticle(payload);
         // Redirect to article page after successful create
         // if (result.id) {
         //   router.push(`/wiki/${result.id}`);

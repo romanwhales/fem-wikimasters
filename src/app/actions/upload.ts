@@ -46,8 +46,13 @@ export async function uploadFile(formData: FormData): Promise<UploadedFile> {
       addRandomSuffix: true,
     });
     console.log("Uploaded");
+    // `put` returns an object shaped by the @vercel/blob runtime. We
+    // don't want to use `any` here — prefer a narrow local type and cast
+    // via `unknown` so TypeScript still forces an explicit shape.
+    type VercelBlobResult = { url?: string; pathname?: string };
+    const blobResult = blob as unknown as VercelBlobResult;
     return {
-      url: (blob as any).url ?? "",
+      url: blobResult.url ?? "",
       size: file.size,
       type: file.type,
       filename: blob.pathname ?? file.name,

@@ -1,6 +1,6 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { expect, test as setup } from "@playwright/test";
+import { test as setup } from "@playwright/test";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -28,8 +28,8 @@ setup("authenticate", async ({ page }) => {
   // Check if we have test user credentials
   const testEmail = process.env.TEST_USER_EMAIL;
   const testPassword = process.env.TEST_USER_PASSWORD;
-  console.log("Test Email",testEmail);
-  console.log("Test Password ",testPassword)
+  console.log("Test Email", testEmail);
+  console.log("Test Password ", testPassword);
 
   if (!testEmail || !testPassword) {
     console.warn("⚠️  TEST_USER_EMAIL and TEST_USER_PASSWORD not set.");

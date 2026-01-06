@@ -6,7 +6,7 @@ export default async function Home() {
   return (
     <div>
       <main className="max-w-2xl mx-auto mt-10 flex flex-col gap-6">
-        {articles.map(({ title, id, createdAt, author,summary }) => (
+        {articles.map(({ title, id, createdAt, author, summary }) => (
           <WikiCard
             key={id}
             title={title}

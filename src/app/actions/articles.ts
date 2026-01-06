@@ -35,18 +35,21 @@ export async function createArticle(data: CreateArticleInput) {
   // TODO: Replace with actual database call
   console.log("✨ createArticle called:", data);
 
-  const response = await db.insert(articles).values({
-    title: data.title,
-    content: data.content,
-    slug: `${Date.now()}`,
-    published: true,
-    authorId: user.id,
-    imageUrl: data.imageUrl ?? undefined,
-    summary,
-  }).returning({id: articles.id})
+  const response = await db
+    .insert(articles)
+    .values({
+      title: data.title,
+      content: data.content,
+      slug: `${Date.now()}`,
+      published: true,
+      authorId: user.id,
+      imageUrl: data.imageUrl ?? undefined,
+      summary,
+    })
+    .returning({ id: articles.id });
   redis.del("articles:all");
   const articleId = response[0]?.id;
-  return { success: true, message: "Article create logged",id: articleId };
+  return { success: true, message: "Article create logged", id: articleId };
 }
 
 export async function updateArticle(id: string, data: UpdateArticleInput) {
@@ -69,7 +72,7 @@ export async function updateArticle(id: string, data: UpdateArticleInput) {
     summary = undefined;
   }
 
-  const authorId = user.id;
+  const _authorId = user.id;
   // TODO: Replace with actual database update
   await db
     .update(articles)

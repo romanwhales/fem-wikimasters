@@ -9,7 +9,7 @@ function isTestEnv() {
 }
 
 export async function summarizeArticle(title: string, article: string) {
-    if (isTestEnv()) {
+  if (isTestEnv()) {
     return "This is a test summary.";
   }
   if (!article || !article.trim()) {
@@ -25,7 +25,7 @@ export async function summarizeArticle(title: string, article: string) {
     prompt,
   });
 
-  console.log("Ai Summary ",text)
+  console.log("Ai Summary ", text);
 
   return (text ?? "").trim();
 }
