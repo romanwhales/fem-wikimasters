@@ -27,7 +27,7 @@ export async function createArticle(data: CreateArticleInput) {
   const user = await stackServerApp.getUser();
 
   if (!user) {
-    throw new Error("un authorized");
+    throw new Error("Unauthorized");
   }
 
   const summary = await summarizeArticle(data.title || "", data.content || "");
@@ -43,21 +43,31 @@ export async function createArticle(data: CreateArticleInput) {
     authorId: user.id,
     imageUrl: data.imageUrl ?? undefined,
     summary,
-  });
+  }).returning({id: articles.id})
   redis.del("articles:all");
-  return { success: true, message: "Article create logged (stub)" };
+  const articleId = response[0]?.id;
+  return { success: true, message: "Article create logged",id: articleId };
 }
 
 export async function updateArticle(id: string, data: UpdateArticleInput) {
   const user = await stackServerApp.getUser();
   if (!user) {
-    throw new Error("Un authorized");
+    throw new Error("Unauthorized");
   }
 
   if (!(await authorizeUserToEditArticle(user.id, +id))) {
-    throw new Error("Forbidden");
+    throw new Error("❌ Forbidden");
   }
-  const summary = await summarizeArticle(data.title || "", data.content || "");
+  console.log("📝 updateArticle called:", { id, ...data });
+
+  // Try to generate summary, but continue without it if it fails (e.g., in tests)
+  let summary: string | undefined;
+  try {
+    summary = await summarizeArticle(data.title || "", data.content || "");
+  } catch (error) {
+    console.warn("⚠️ Failed to generate AI summary:", error);
+    summary = undefined;
+  }
 
   const authorId = user.id;
   // TODO: Replace with actual database update
@@ -70,30 +80,33 @@ export async function updateArticle(id: string, data: UpdateArticleInput) {
       summary: summary ?? undefined,
     })
     .where(eq(articles.id, +id));
-  console.log("📝 updateArticle called:", { id, ...data, authorId });
-  return { success: true, message: `Article ${id} update logged (stub)` };
+  return { success: true, message: `Article ${id} update logged` };
 }
 
 export async function deleteArticle(id: string) {
   // TODO: Replace with actual database delete
+  const user = await stackServerApp.getUser();
+  if (!user) {
+    throw new Error("❌ Unauthorized");
+  }
+
+  if (!(await authorizeUserToEditArticle(user.id, +id))) {
+    throw new Error("❌ Forbidden");
+  }
+
   console.log("🗑️ deleteArticle called:", id);
-  await db.delete(articles).where(eq(articles.id, +id));
+
+  const _response = await db.delete(articles).where(eq(articles.id, +id));
+
   return { success: true, message: `Article ${id} delete logged (stub)` };
 }
 
 // Form-friendly server action: accepts FormData from a client form and calls deleteArticle
+// Form-friendly server action: accepts FormData from a client form and calls deleteArticle
 export async function deleteArticleForm(formData: FormData): Promise<void> {
-  const user = await stackServerApp.getUser();
-  if (!user) {
-    throw new Error("Un Authorized");
-  }
   const id = formData.get("id");
   if (!id) {
     throw new Error("Missing article id");
-  }
-
-  if (!(await authorizeUserToEditArticle(user.id, +id))) {
-    throw new Error("Forbidden");
   }
 
   await deleteArticle(String(id));
