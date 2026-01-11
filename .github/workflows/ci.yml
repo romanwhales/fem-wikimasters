@@ -40,7 +40,7 @@ jobs:
         run: echo "BRANCH_NAME=unit-${{ github.run_id }}" >> "$GITHUB_ENV"
       - name: Get branch expiration date as an env variable (2 weeks from now)
         id: get-expiration-date
-        run: echo "EXPIRES_AT=$(date -u --date '+14 days' + '%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_ENV"
+        run: echo "EXPIRES_AT=$(date -u --date '+14 days' +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_ENV"
       - name: Debug env
         run: |
           echo "BRANCH_NAME=$BRANCH_NAME"
