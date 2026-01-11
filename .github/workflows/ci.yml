@@ -45,6 +45,7 @@ jobs:
         run: |
           echo "BRANCH_NAME=$BRANCH_NAME"
           echo "EXPIRES_AT=$EXPIRES_AT"
+          echo "$(date -u --date '+14 days' + '%Y-%m-%dT%H:%M:%SZ')"
       - name: Create Neon branch
         uses: neondatabase/create-branch-action@v6
         id: create-neon-branch
