@@ -28,31 +28,25 @@ jobs:
   unit-tests:
     name: Unit Tests
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
         with:
           node-version: "22"
           cache: "npm"
           cache-dependency-path: package-lock.json
-
       - name: Get Neon branch name
         id: neon-branch-name
         run: echo "BRANCH_NAME=unit-${{ github.run_id }}" >> "$GITHUB_ENV"
-
       - name: Get branch expiration date as an env variable (2 weeks from now)
         id: get-expiration-date
-        run:
-          echo "EXPIRES_AT=$(date -u --date '+14 days' +'%Y-%m-%dT%H:%M:%SZ')"
-          >> "$GITHUB_ENV"
+        run: echo "EXPIRES_AT=$(date -u --date '+14 days' +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_ENV"
 
-      - name: Create Neon Branch
+      - name: Create Neon branch
         uses: neondatabase/create-branch-action@v6
         id: create-neon-branch
+        env:
+          ACTIONS_STEP_DEBUG: true
         with:
           project_id: ${{ secrets.NEON_PROJECT_ID }}
           branch_name: ${{ env.BRANCH_NAME }}
@@ -65,7 +59,7 @@ jobs:
       - name: Run unit tests
         run: npm run test
         env:
-          DATABASE_URL: ${{ steps.create-neon-branch.outputs.db_url }}
+          DATABASE_URL: ${{steps.create-neon-branch.outputs.db_url}}
           NODE_ENV: test
           NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
           NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
@@ -80,6 +74,7 @@ jobs:
           BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
           BLOB_BASE_URL: ${{ secrets.BLOB_BASE_URL }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          AI_GATEWAY_API_KEY: ${{ secrets.AI_GATEWAY_API_KEY }}
       - name: Delete Neon Branch
         if: always()
         uses: neondatabase/delete-branch-action@v3
@@ -88,3 +83,23 @@ jobs:
           project_id: ${{ secrets.NEON_PROJECT_ID }}
           branch: ${{ env.BRANCH_NAME }}
           api_key: ${{ secrets.NEON_API_KEY }}
+
+  ts-check:
+    name: Typescript Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run typescript type check
+        run: npm run typecheck
