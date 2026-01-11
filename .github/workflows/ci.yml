@@ -53,7 +53,7 @@ jobs:
           project_id: ${{ secrets.NEON_PROJECT_ID }}
           branch_name: ${{ env.BRANCH_NAME }}
           api_key: ${{ secrets.NEON_API_KEY }}
-          expires_at: ${{ env.EXPIRES_AT }}
+          role: neondb_owner
 
       - name: Install dependencies
         run: npm ci
