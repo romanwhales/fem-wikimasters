@@ -46,11 +46,20 @@ jobs:
           echo "BRANCH_NAME=$BRANCH_NAME"
           echo "EXPIRES_AT=$EXPIRES_AT"
           echo "$(date -u --date '+14 days' +'%Y-%m-%dT%H:%M:%SZ')"
-      - name: Create Neon branch
+
+      - name: Get Neon branch name
+        id: neon-branch-name
+        run: echo "BRANCH_NAME=unit-${{ github.run_id }}" >> "$GITHUB_ENV"
+
+      - name: Get branch expiration date as an env variable (2 weeks from now)
+        id: get-expiration-date
+        run:
+          echo "EXPIRES_AT=$(date -u --date '+14 days' +'%Y-%m-%dT%H:%M:%SZ')"
+          >> "$GITHUB_ENV"
+
+      - name: Create Neon Branch
         uses: neondatabase/create-branch-action@v6
         id: create-neon-branch
-        env:
-          ACTIONS_STEP_DEBUG: true
         with:
           project_id: ${{ secrets.NEON_PROJECT_ID }}
           branch_name: ${{ env.BRANCH_NAME }}
