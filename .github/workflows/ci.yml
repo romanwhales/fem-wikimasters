@@ -44,6 +44,8 @@ jobs:
       - name: Create Neon branch
         uses: neondatabase/create-branch-action@v6
         id: create-neon-branch
+        env:
+          ACTIONS_STEP_DEBUG: true
         with:
           project_id: ${{ secrets.NEON_PROJECT_ID }}
           branch_name: ${{ env.BRANCH_NAME }}
