@@ -54,6 +54,17 @@ jobs:
           branch_name: ${{ env.BRANCH_NAME }}
           api_key: ${{ secrets.NEON_API_KEY }}
           role: neondb_owner
+          expires_at: ${{ env.EXPIRES_AT }}
+
+      # v6 (latest)
+      - name: Create Neon Branch2
+        uses: neondatabase/create-branch-action@v6
+        id: create-branch
+        with:
+          project_id: ${{ secrets.NEON_PROJECT_ID }}
+          branch_name: actions_reusable
+          role: neondb_owner
+          api_key: ${{ secrets.NEON_API_KEY }}
 
       - name: Install dependencies
         run: npm ci
